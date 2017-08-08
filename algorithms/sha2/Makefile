@@ -4,10 +4,12 @@ LIBS=-lm
 CFLAGS=-Wall $(LIBS)
 LDFLAGS=-Wall $(LIBS)
 
-SRCS=$(wildcard *.cpp) $(wildcard */*.cpp)
+recursive=$(foreach d,$(wildcard $1*),$(call recursive,$d/,$2) $(filter $(subst *,%,$2),$d))
+
+SRCS=$(call recursive, , *.cpp)
 OBJS=$(SRCS:.cpp=.o)
 
-%.o: %.c
+%.o: %.cpp
 	@ echo ".compiling"
 	$(CC) -c $^ -o $@ $(CFLAGS)
 
@@ -22,10 +24,7 @@ all: build.elf
 .PHONY: clean
 clean:
 	@ echo ".cleaning"
-	@rm -rf *.o
-	@rm -rf */*.o
-	@rm -rf *.elf
-	@rm -rf *.map
-	@rm -rf *~
-	@rm -rf */*~
+	@rm -f $(call recursive, , *.o *~)
+	@rm -f *.elf
+	@rm -f *.map
 
