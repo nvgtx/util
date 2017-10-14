@@ -1,33 +1,37 @@
-CC=g++
-LD=g++
-CFLAGS=-Wall
-LDFLAGS=-Wall
+LIBS:=-lc -lm
+
+CC:=g++
+CCFLAGS:=-c -Wall
+
+LD:=g++
+LDFLAGS:=$(LIBS)
 
 find=$(shell find -type f -name $(1))
 
-SRCS:=$(call find, '*.cpp')
-OBJS:=$(SRCS:.cpp=.o)
+SOURCESH:=$(call find, '*.h')
+SOURCESCPP:=$(call find, '*.cpp')
+OBJECTS:=$(SOURCESCPP:.cpp=.o)
 
 #keep intermediate files
 .SECONDARY:
 #keep additional files
 .PRECIOUS: *.map
+#keyword targets
+.PHONY: all clean
 
-%.o: %.cpp
-	@ echo ".compiling"
-	$(CC) -c $^ -o $@ $(CFLAGS)
+%.o: %.cpp $(SOURCESH)
+	@echo ".compiling $<"
+	@$(CC) $< -o $@ $(CCFLAGS)
 
-%.elf: $(OBJS)
-	@ echo "..linking"
-	$(LD) $^ -o $@ $(LDFLAGS) -Wl,-Map,$*.map
+%.elf: $(OBJECTS)
+	@echo "..linking $@"
+	@$(LD) $^ -o $@ $(LDFLAGS) -Wl,-Map,$*.map
 
-.PHONY: all
 all: build.elf
-	@ echo "...completing"
+	@echo "...completing $^"
 
-.PHONY: clean
 clean:
-	@ echo ".cleaning"
+	@echo ".cleaning"
 	@rm -f $(call find, '*.o')
 	@rm -f $(call find, '*~')
 	@rm -f *.elf
